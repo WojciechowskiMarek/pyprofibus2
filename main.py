@@ -1,17 +1,13 @@
 from concurrent.futures import thread
-from logging import root
-from multiprocessing.resource_sharer import stop
 import threading
-import time
 from tkinter import *
 from tkinter import messagebox
-import asyncio
-import threading
 import pyprofibus
+
+profibus_on = False
 
 stop = False
 t1 : thread
-
     
 def run():
     global comm, stop
@@ -77,12 +73,18 @@ def run():
     return 0    
 
 def stop_profibus():
-    global stop,t1   
+    global stop, t1, profibus_on
+    if not profibus_on:
+        return
+    profibus_on = False
     stop = True
     t1.join()
-       
+    
 def start_profibus():
-    global stop, t1 
+    global stop, t1, profibus_on
+    if profibus_on:
+        return
+    profibus_on = True
     stop = False
     t1 = threading.Thread(target = run)
     t1.start()
@@ -91,7 +93,7 @@ def main():
     global t1,stop
     root = Tk()
     def close():
-        global stop,t1   
+        global stop, t1   
         stop = True
         t1.join()
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
